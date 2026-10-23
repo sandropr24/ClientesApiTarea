@@ -1,10 +1,12 @@
 ﻿using ClientesApi.Data;
 using ClientesApi.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClientesApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ClientesController : ControllerBase
@@ -29,6 +31,7 @@ namespace ClientesApi.Controllers
         }
 
         //GET
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Cliente>> ObtenerPorId(int id)
         {
@@ -45,7 +48,7 @@ namespace ClientesApi.Controllers
         }
 
         //POST : api/cliente -> registrar (No olvidar que debemos enviar en el BODY JSON {})
-
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Cliente>> Registrar([FromBody] Cliente cliente)
         {
@@ -71,6 +74,7 @@ namespace ClientesApi.Controllers
         }
 
         //PUT : api/clientes/1 -> actualizar (lleva un JSON en el BODY)
+        [Authorize]
         [HttpPut("{id:int}")]
 
         public async Task<ActionResult> Actualizar(int id, [FromBody] Cliente cliente)
@@ -118,7 +122,7 @@ namespace ClientesApi.Controllers
 
 
         //DELETE: api/clientes/1  -> eliminar
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Eliminar(int id)
         {

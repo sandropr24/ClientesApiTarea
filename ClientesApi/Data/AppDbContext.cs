@@ -14,6 +14,7 @@ namespace ClientesApi.Data
         //ORM tendrá acceso al módelo cliente
         public DbSet<Cliente> Clientes { get; set; }
         public DbSet<Producto> Productos { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
     }
 }

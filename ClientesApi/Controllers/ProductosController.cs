@@ -99,8 +99,6 @@ namespace ClientesApi.Controllers
 
         }
 
-
-
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Eliminar(int id)
         {
