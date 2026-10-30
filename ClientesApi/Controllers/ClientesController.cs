@@ -3,11 +3,12 @@ using ClientesApi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 
 namespace ClientesApi.Controllers
 {
-    [Authorize]
-    [ApiController]
+    //[Authorize]
+    //[ApiController]
     [Route("api/[controller]")]
     public class ClientesController : ControllerBase
     {
@@ -24,14 +25,38 @@ namespace ClientesApi.Controllers
         //async Task     :asincrono(tiene latencia)
         //ActionResult   : Valor a obtener (coleccion definida en el modelo)
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Cliente>>> Listar()
+        public async Task<ActionResult<IEnumerable<Cliente>>> Listar([FromQuery]string? buscar)
         {
-            var clientes = await _context.Clientes.AsNoTracking().ToListAsync();
-            return Ok(clientes);
+            //Algoritmo basico
+            // var clientes = await _context.Clientes.AsNoTracking().ToListAsync();
+            //return Ok(clientes);
+
+            //Algoritmo que permite listar todo o aplicar filtro
+            var consulta = _context.Clientes.AsNoTracking();
+
+            //Si la variable buscar no esta vacia (apelidos ,nombres , DNI)
+            if(!string.IsNullOrWhiteSpace(buscar))
+            {
+                var texto = buscar.Trim();
+                consulta = consulta.Where(c =>
+                    c.Apellidos.Contains(texto) ||
+                    c.Nombres.Contains(texto) ||
+                    c.Dni.Contains(texto)
+                    );
+            }
+
+            var lista = await consulta
+                .OrderBy(c => c.Apellidos)
+                .ThenBy(c => c.Nombres)
+                .Take(200)
+                .ToListAsync();
+
+            return Ok(lista);
+
         }
 
         //GET
-        [Authorize]
+        //[Authorize]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Cliente>> ObtenerPorId(int id)
         {
@@ -48,7 +73,7 @@ namespace ClientesApi.Controllers
         }
 
         //POST : api/cliente -> registrar (No olvidar que debemos enviar en el BODY JSON {})
-        [Authorize]
+        //[Authorize]
         [HttpPost]
         public async Task<ActionResult<Cliente>> Registrar([FromBody] Cliente cliente)
         {
@@ -74,7 +99,7 @@ namespace ClientesApi.Controllers
         }
 
         //PUT : api/clientes/1 -> actualizar (lleva un JSON en el BODY)
-        [Authorize]
+        //[Authorize]
         [HttpPut("{id:int}")]
 
         public async Task<ActionResult> Actualizar(int id, [FromBody] Cliente cliente)
@@ -122,7 +147,7 @@ namespace ClientesApi.Controllers
 
 
         //DELETE: api/clientes/1  -> eliminar
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Eliminar(int id)
         {
